@@ -53,7 +53,12 @@ def _load_cfg(extra: dict | None = None) -> dict:
     except Exception as exc:  # noqa: BLE001
         logger.warning(f"[context_budget] 配置读取失败，用默认值：{exc}")
     if isinstance(extra, dict):
-        cfg.update({k: v for k, v in extra.items() if k in DEFAULTS and v is not None})
+        # 空字符串（WebUI 未填的文本框）不覆盖已有配置
+        cfg.update({
+            k: v for k, v in extra.items()
+            if k in DEFAULTS and v is not None
+            and not (isinstance(v, str) and not v.strip())
+        })
     return cfg
 
 

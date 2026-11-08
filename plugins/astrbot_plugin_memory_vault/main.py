@@ -51,7 +51,12 @@ def _cfg(extra: dict | None = None) -> dict:
     except Exception:  # noqa: BLE001
         pass
     if isinstance(extra, dict):
-        cfg.update({k: v for k, v in extra.items() if k in DEFAULT_CFG and v is not None})
+        # WebUI 生成的配置里，没填的文本框是空字符串；空值不能覆盖已生效的配置
+        cfg.update({
+            k: v for k, v in extra.items()
+            if k in DEFAULT_CFG and v is not None
+            and not (isinstance(v, str) and not v.strip())
+        })
     return cfg
 
 

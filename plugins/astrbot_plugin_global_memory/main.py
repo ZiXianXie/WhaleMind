@@ -77,9 +77,12 @@ class GlobalMemoryPlugin(Star):
             else:
                 p.write_text(json.dumps(self.cfg, ensure_ascii=False, indent=2), encoding="utf-8")
             if isinstance(extra, dict):
-                self.cfg.update(
-                    {k: v for k, v in extra.items() if k in DEFAULTS and v is not None}
-                )
+                # 空字符串（WebUI 未填）不覆盖已有配置
+                self.cfg.update({
+                    k: v for k, v in extra.items()
+                    if k in DEFAULTS and v is not None
+                    and not (isinstance(v, str) and not v.strip())
+                })
         except Exception as e:
             logger.warning("[global_memory] 配置读取失败: %s", e)
 

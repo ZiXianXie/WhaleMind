@@ -97,6 +97,12 @@ def _cfg_load(extra: dict | None = None) -> dict:
         cfg = {}
     out = dict(DEFAULTS)
     out.update({k: v for k, v in cfg.items() if v is not None})
+    if isinstance(extra, dict):
+        # WebUI 配置：空字符串（未填的文本框）不覆盖已有值
+        out.update({
+            k: v for k, v in extra.items()
+            if v is not None and not (isinstance(v, str) and not v.strip())
+        })
     return out
 
 
@@ -483,6 +489,13 @@ class SelfStudyPlugin(Star):
         br = getattr(self, "bridge", None)
         if br is None:
             return False
+        # 没配 token 或没配 pc_root：说明用户没打算镜像到电脑，静默跳过
+        # （以前这里会一直报 unauthorized，刷满日志）
+        if not str(self.cfg.get("token") or "").strip() or not str(self.cfg.get("pc_root") or "").strip():
+            if not getattr(self, "_mirror_warned", False):
+                self._mirror_warned = True
+                logger.info("[self_study] 未配置 token / pc_root，镜像到电脑的功能已跳过")
+            return True
         res = br.call(
             "POST", "/fs/write",
             payload={"path": self._pc_path(*rel.split("/")), "content": content, "mode": mode},

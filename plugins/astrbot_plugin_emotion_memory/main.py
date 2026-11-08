@@ -41,7 +41,11 @@ class EmotionMemory(Star):
     def __init__(self, context: Context, config=None):
         super().__init__(context, config)
         self.cfg = dict(DEFAULTS)
-        self.cfg.update(config or {})
+        # 空字符串（WebUI 未填）不覆盖默认值
+        self.cfg.update({
+            k: v for k, v in (config or {}).items()
+            if v is not None and not (isinstance(v, str) and not v.strip())
+        })
         self.sys = None
         self.ready = False
         self.n_written = 0
