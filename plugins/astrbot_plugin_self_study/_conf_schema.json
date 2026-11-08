@@ -1,0 +1,106 @@
+{
+  "enabled": {
+    "description": "启用自主学习",
+    "type": "bool",
+    "default": true
+  },
+  "bridge_url": {
+    "description": "本机桥地址（可选）",
+    "type": "string",
+    "default": "",
+    "hint": "留空 = 只存本地"
+  },
+  "token": {
+    "description": "本机桥鉴权 Token",
+    "type": "string",
+    "default": "",
+    "secret": true
+  },
+  "pc_root": {
+    "description": "学习库镜像目录",
+    "type": "string",
+    "default": "",
+    "hint": "例如 D:\\\\日记\\\\学习；留空则只存本机"
+  },
+  "digest_use_cloud": {
+    "description": "优先用云端模型消化",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭则只用本地 Ollama。云端质量明显更好，但会产生费用"
+  },
+  "cloud_model": {
+    "type": "string",
+    "description": "云端消化模型",
+    "hint": "开启云端消化时使用；留空则用默认 deepseek-chat",
+    "default": "deepseek-chat",
+    "invisible": false
+  },
+  "ollama_url": {
+    "description": "本地模型地址",
+    "type": "string",
+    "default": "http://127.0.0.1:11434"
+  },
+  "ollama_model": {
+    "description": "本地模型名",
+    "type": "string",
+    "default": "qwen3:8b"
+  },
+  "digest_hour": {
+    "description": "每天几点消化",
+    "type": "int",
+    "default": 3,
+    "slider": {
+      "min": 0,
+      "max": 23,
+      "step": 1
+    }
+  },
+  "inject_facts": {
+    "description": "每轮注入几条事实",
+    "type": "int",
+    "default": 5,
+    "hint": "0 表示不注入。总预算建议不超过 1500 字",
+    "slider": {
+      "min": 0,
+      "max": 20,
+      "step": 1
+    }
+  },
+  "inject_style": {
+    "description": "每轮注入几条说话风格",
+    "type": "int",
+    "default": 3,
+    "slider": {
+      "min": 0,
+      "max": 10,
+      "step": 1
+    }
+  },
+  "persona_max_chars": {
+    "description": "人格文件字数上限",
+    "type": "int",
+    "default": 4200,
+    "slider": {
+      "min": 500,
+      "max": 20000,
+      "step": 100
+    }
+  },
+  "max_persona_ops": {
+    "description": "单次自改人格最多改几行",
+    "type": "int",
+    "default": 3,
+    "hint": "防止模型一次性重写整个人格",
+    "slider": {
+      "min": 1,
+      "max": 10,
+      "step": 1
+    }
+  },
+  "admins": {
+    "description": "允许执行 /学习 命令的用户",
+    "type": "list",
+    "default": [],
+    "_special": "sender_id"
+  }
+}

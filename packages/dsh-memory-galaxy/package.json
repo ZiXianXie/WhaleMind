@@ -1,0 +1,39 @@
+{
+  "name": "dsh-memory-galaxy",
+  "version": "0.1.0",
+  "description": "Memory Galaxy for DeepSeek Harness: paint your long-term memory as a spiral galaxy — long-term anchors in the core, short-term memories drifting outward, with a draggable forgetting-time slider to preview the future.",
+  "author": "Derpyu520 & 大肥鱼",
+  "license": "MIT",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "public",
+    "cordis.patch.yml",
+    "README.md",
+    "使用说明.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "memory",
+    "visualization",
+    "galaxy",
+    "meow-memory",
+    "forgetting-curve"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

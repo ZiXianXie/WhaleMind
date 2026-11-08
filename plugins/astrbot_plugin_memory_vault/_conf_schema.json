@@ -1,0 +1,43 @@
+{
+  "enabled": {
+    "description": "启用流水落盘",
+    "type": "bool",
+    "default": true
+  },
+  "bridge_url": {
+    "description": "本机桥地址（可选）",
+    "type": "string",
+    "default": "",
+    "hint": "留空 = 只存本地 plugin_data，不镜像到电脑"
+  },
+  "token": {
+    "description": "本机桥鉴权 Token",
+    "type": "string",
+    "default": "",
+    "secret": true
+  },
+  "own_folder": {
+    "description": "镜像目标目录",
+    "type": "string",
+    "default": "",
+    "hint": "例如 D:\\\\日记；留空则不镜像"
+  },
+  "subdir": {
+    "description": "镜像子目录名",
+    "type": "string",
+    "default": "记忆"
+  },
+  "flush_seconds": {
+    "description": "落盘间隔（秒）",
+    "type": "int",
+    "default": 60,
+    "slider": { "min": 10, "max": 600, "step": 10 }
+  },
+  "max_lines": {
+    "description": "索引最多保留多少行",
+    "type": "int",
+    "default": 5000,
+    "hint": "超过后从最早的开始丢弃（原始归档不受影响）",
+    "slider": { "min": 500, "max": 50000, "step": 500 }
+  }
+}

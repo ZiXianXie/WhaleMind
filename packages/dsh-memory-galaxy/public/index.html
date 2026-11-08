@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>记忆银河 · Memory Galaxy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #04060f; }
+  body { font: 13px/1.5 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; color: #cfd8ea; }
+  canvas { display: block; width: 100vw; height: 100vh; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  .panel { position: fixed; background: rgba(10,15,28,.72); border: 1px solid rgba(120,160,255,.16);
+           border-radius: 12px; backdrop-filter: blur(8px); }
+
+  /* 顶部 */
+  #top { left: 16px; top: 14px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 300px; }
+  #top h1 { margin: 0; font-size: 15px; letter-spacing: .18em; color: #cfe0ff; font-weight: 600; }
+  #top .row { display: flex; gap: 14px; font-size: 12px; color: #8290ac; flex-wrap: wrap; }
+  #top .row b { color: #e6eeff; font-weight: 600; }
+  #tools { display: flex; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+  #tools button { background: rgba(120,160,255,.09); color: #b9caf0; border: 1px solid rgba(120,160,255,.2);
+                  border-radius: 7px; padding: 3px 9px; font-size: 12px; cursor: pointer; transition: .15s; }
+  #tools button:hover { background: rgba(120,160,255,.2); color: #fff; }
+  #tools button.on { background: rgba(80,220,170,.22); border-color: rgba(80,220,170,.55); color: #9dffe0; }
+  #search { width: 100%; margin-top: 4px; background: rgba(255,255,255,.05); border: 1px solid rgba(120,160,255,.18);
+            border-radius: 7px; color: #dce6ff; padding: 5px 9px; font-size: 12px; outline: none; }
+  #search:focus { border-color: rgba(120,190,255,.6); }
+
+  /* 右侧 */
+  #right { right: 16px; top: 14px; width: 264px; padding: 12px 14px; max-height: calc(100vh - 130px); overflow: auto; }
+  #right h2 { margin: 10px 0 6px; font-size: 11px; letter-spacing: .16em; color: #6f7e9c; font-weight: 600; }
+  #right h2:first-child { margin-top: 0; }
+  .kindrow { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .kindrow:hover { background: rgba(120,160,255,.1); }
+  .kindrow.off { opacity: .32; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .kindrow .n { margin-left: auto; color: #9fb0d0; font-variant-numeric: tabular-nums; }
+  .stat { display: flex; gap: 6px; flex-wrap: wrap; }
+  .stat span { background: rgba(120,160,255,.1); border-radius: 999px; padding: 1px 9px; font-size: 11.5px; color: #b6c6e6; }
+  .mini { font-size: 11.5px; color: #93a2c0; padding: 3px 4px; border-radius: 6px; cursor: pointer;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini:hover { background: rgba(120,160,255,.12); color: #e3ecff; }
+
+  /* 底部时间滑杆 */
+  #time { left: 50%; transform: translateX(-50%); bottom: 18px; width: min(720px, calc(100vw - 360px)); padding: 10px 18px 12px; }
+  #time .head { display: flex; align-items: baseline; gap: 10px; font-size: 12px; color: #8d9cbb; }
+  #time .head b { color: #cfe1ff; font-weight: 600; font-size: 13px; }
+  #time .head .right { margin-left: auto; }
+  input[type=range] { width: 100%; margin: 8px 0 2px; accent-color: #6fc7ff; }
+  #time .ticks { display: flex; justify-content: space-between; font-size: 10.5px; color: #52607c; }
+
+  /* 详情 */
+  #detail { left: 16px; bottom: 18px; width: 330px; padding: 12px 14px; display: none; }
+  #detail.show { display: block; }
+  #detail .k { font-size: 10.5px; letter-spacing: .12em; color: #6f7e9c; text-transform: uppercase; }
+  #detail .t { font-size: 14px; color: #eef4ff; margin: 2px 0 8px; font-weight: 600; }
+  #detail .x { font-size: 12.5px; line-height: 1.65; color: #c3cfe6; white-space: pre-wrap; margin-bottom: 10px; max-height: 168px; overflow: auto; }
+  #detail .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  #detail .meta span { font-size: 11px; background: rgba(120,160,255,.12); border-radius: 999px; padding: 1px 8px; color: #a9bce0; }
+
+  #hint { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); font-size: 11.5px; color: #4b5871; pointer-events: none; }
+  #tip { position: fixed; pointer-events: none; background: rgba(8,13,24,.92); border: 1px solid rgba(120,160,255,.22);
+         border-radius: 8px; padding: 5px 9px; font-size: 12px; color: #dbe6ff; max-width: 320px; display: none; z-index: 9; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="top" class="panel">
+  <h1>记忆银河 · GALAXY</h1>
+  <div class="row"><span>恒星 <b id="nStars">0</b></span><span>平均强度 <b id="avgS">0</b></span><span>中心锚定 <b id="nPin">0</b></span><span>对话消息 <b id="nMsgs">0</b></span></div>
+  <div id="tools">
+    <button data-t="spin" class="on">自转</button>
+    <button data-t="beams">光柱</button>
+    <button data-t="labels" class="on">标签</button>
+    <button data-t="top">俯视</button>
+    <button data-t="reset">重置</button>
+  </div>
+  <input id="search" placeholder="搜索记忆（标题 / 内容 / 标签）" />
+</div>
+
+<div id="right" class="panel">
+  <h2>星等类型（点击筛选）</h2>
+  <div id="kinds"></div>
+  <h2>数据来源</h2>
+  <div class="stat" id="sources"></div>
+  <h2>状态（随滑杆变化）</h2>
+  <div class="stat" id="states"></div>
+  <h2>它记着的事</h2>
+  <div id="pinned"></div>
+  <h2>学到的做法</h2>
+  <div id="lessons"></div>
+</div>
+
+<div id="time" class="panel">
+  <div class="head"><span>遗忘推演</span><b id="tLabel">今天</b><span id="tStats" class="right"></span></div>
+  <input id="slider" type="range" min="0" max="365" value="0" step="1" />
+  <div class="ticks"><span>今天</span><span>+30天</span><span>+90天</span><span>+180天</span><span>+365天</span></div>
+</div>
+
+<div id="detail" class="panel">
+  <div class="k">记忆</div>
+  <div class="t" id="dTitle"></div>
+  <div class="x" id="dText"></div>
+  <div class="meta" id="dMeta"></div>
+</div>
+
+<div id="hint">拖动旋转 · 滚轮缩放 · 单击恒星看记忆 · 双击钉住 →</div>
+<div id="tip"></div>
+
+<script>
+const KIND = {
+  identity:   { label: '身份', color: [255, 214, 150] },
+  fact:       { label: '事实', color: [130, 230, 200] },
+  event:      { label: '经历', color: [150, 190, 255] },
+  plan:       { label: '约定', color: [255, 210, 140] },
+  conclusion: { label: '结论', color: [190, 165, 255] },
+  diary:      { label: '日记', color: [255, 205, 120] },
+  feeling:    { label: '心情', color: [255, 160, 210] },
+};
+const TH = { fadeAt: 0.60, traceAt: 0.25, dropAt: 0.08 };
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
+function resize() {
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+let stars = [], messages = [], links = [], meta = {};
+let cam = { yaw: -0.55, pitch: -1.35, dist: 1300, focal: 1400 };
+let opts = { spin: true, beams: false, labels: true };
+let tDays = 0;
+let hiddenKinds = new Set();
+let query = '';
+let msgMatch = '';
+let selected = null, hovered = null;
+const placed = [];
+const R = 1000;
+
+const el = (id) => document.getElementById(id);
+
+function retention(s, t) {
+  const effAge = s.hitDays === null ? s.ageDays : Math.min(s.ageDays, s.hitDays * 0.55);
+  return Math.exp(-(effAge + t) / s.tau);
+}
+function stateOf(r) { return r >= TH.fadeAt ? 'vivid' : r >= TH.traceAt ? 'faded' : r >= TH.dropAt ? 'trace' : 'gone'; }
+
+function project(x, y, z) {
+  const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+  let X = x * cy - z * sy;
+  let Z = x * sy + z * cy;
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  let Y = y * cp - Z * sp;
+  Z = y * sp + Z * cp;
+  const persp = cam.focal / Math.max(26, cam.focal + Z + cam.dist * 0.35);
+  const zoom = 1300 / cam.dist;            // 相机拉近 = 整体放大
+  return { x: W / 2 + X * persp * zoom, y: H / 2 + Y * persp * zoom, z: Z, s: persp * zoom };
+}
+
+function matches(s) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return (s.title + ' ' + s.text + ' ' + (s.tags || []).join(' ')).toLowerCase().includes(q);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景径向渐变 + 银河盘面光晕
+  const bg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.75);
+  bg.addColorStop(0, 'rgba(22,32,58,.95)');
+  bg.addColorStop(0.45, 'rgba(9,13,26,.98)');
+  bg.addColorStop(1, '#04060f');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // 核心辉光
+  const core = project(0, 0, 0);
+  const glow = ctx.createRadialGradient(core.x, core.y, 0, core.x, core.y, Math.max(120, 300 * core.s));
+  glow.addColorStop(0, 'rgba(255,232,190,.16)');
+  glow.addColorStop(0.35, 'rgba(255,205,140,.07)');
+  glow.addColorStop(1, 'rgba(255,190,120,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(core.x, core.y, Math.max(120, 300 * core.s), 0, Math.PI * 2); ctx.fill();
+
+  // 旋臂薄雾
+  ctx.globalCompositeOperation = 'lighter';
+  const nArms = meta.arms || 3;
+  for (let pass = 0; pass < 2; pass++) {
+    ctx.globalAlpha = pass === 0 ? 0.014 : 0.010;
+    ctx.strokeStyle = pass === 0 ? 'rgba(120,170,255,1)' : 'rgba(190,150,255,1)';
+    ctx.lineWidth = pass === 0 ? 34 : 14;
+    ctx.lineCap = 'round';
+    for (let a = 0; a < nArms; a++) {
+      ctx.beginPath();
+      for (let i = 0; i <= 80; i++) {
+        const rr = 0.14 + (i / 80) * 0.88;
+        const rad = R * rr;
+        const th = (a / nArms) * Math.PI * 2 - 3.1 * Math.log(rr * 6 + 1);
+        const p = project(Math.cos(th) * rad, 0, Math.sin(th) * rad);
+        i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // 星尘
+  // 对话消息：全部原始聊天，按会话着色、随时间变淡
+  for (const msg of messages) {
+    const ret = Math.exp(-(msg.ageDays + tDays) / msg.tau);
+    if (ret < 0.05) continue;
+    const hit = msgMatch ? msg.text.toLowerCase().includes(msgMatch) : false;
+    const p = project(msg.x, msg.y, msg.z);
+    if (p.s <= 0.02) continue;
+    const c = msg.self ? [255, 214, 160] : msg.key.startsWith('private') ? [150, 190, 255] : [140, 226, 190];
+    ctx.globalAlpha = Math.min(0.95, (0.10 + 0.58 * ret) * (0.45 + p.s * 0.65) * (msg.self ? 1.1 : 1) * (msgMatch ? (hit ? 1.9 : 0.18) : 1));
+    ctx.fillStyle = 'rgb(' + c.join(',') + ')';
+    const sz = Math.max(1.0, (msgMatch && hit ? 2.6 : 1.2) + p.s * 1.1);
+    ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
+  }
+
+  // 恒星
+  const order = [];
+  for (const s of stars) {
+    const r = retention(s, tDays);
+    s._r = r;
+    s._state = stateOf(r);
+    if (s._state === 'gone') continue;
+    if (hiddenKinds.has(s.kind)) continue;
+    const p = project(s.x, s.y, s.z);
+    order.push({ s, p });
+  }
+  order.sort((a, b) => b.p.z - a.p.z);
+
+  // 标签：只给最重要的十几颗 + 选中/悬停，并做碰撞剔除
+  const labelSet = new Set();
+  placed.length = 0;
+  if (selected) labelSet.add(selected.id);
+  if (hovered) labelSet.add(hovered.id);
+  const cand = order.filter(({ s }) => !query || matches(s))
+    .map((o) => ({ s: o.s, score: o.s.weight * (0.5 + o.s._r) * (o.s.pin ? 1.6 : 1) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 14);
+  for (const c of cand) labelSet.add(c.s.id);
+
+  // 光柱
+  if (opts.beams) {
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = 'rgba(140,190,255,.7)';
+    for (const { s, p } of order) {
+      const base = project(s.x, 0, s.z);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(base.x, base.y); ctx.stroke();
+    }
+  }
+
+  for (const { s, p } of order) {
+    if (p.s <= 0.02) continue;
+    const [cr, cg, cb] = (KIND[s.kind] || KIND.fact).color;
+    const r = s._r;
+    const state = s._state;
+    const dim = state === 'trace' ? 0.35 : state === 'faded' ? 0.7 : 1;
+    const base = (0.75 + s.weight * 0.32) * (0.45 + 0.55 * r) * p.s * 2.1 * dim;
+    const isSel = selected && selected.id === s.id;
+    const isHover = hovered && hovered.id === s.id;
+    const isMatch = query ? matches(s) : true;
+    const alpha = Math.min(1, (0.18 + 0.82 * r) * (isMatch ? 1 : 0.16) * (state === 'trace' ? 0.55 : 1));
+
+    if (s.pin || isSel || isHover) {
+      const glowR = Math.min(170, base * 8);
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
+      g.addColorStop(0, `rgba(${cr},${cg},${cb},${isSel ? 0.42 : 0.2})`);
+      g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      ctx.globalAlpha = 1; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+    const rad0 = Math.min(16, Math.max(0.7, base * (s.pin ? 2.1 : 1.5)));
+    ctx.beginPath(); ctx.arc(p.x, p.y, rad0, 0, Math.PI * 2); ctx.fill();
+
+    if (s.pin) {
+      ctx.globalAlpha = 0.35 + 0.5 * r; ctx.strokeStyle = `rgba(${cr},${cg},${cb},.8)`; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(p.x, p.y, Math.min(30, Math.max(1.8, base * 2.5)), 0, Math.PI * 2); ctx.stroke();
+    }
+    if (isSel || isHover) {
+      ctx.globalAlpha = 0.9; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(p.x, p.y, Math.min(34, Math.max(4, base * 4.2)), 0, Math.PI * 2); ctx.stroke();
+    }
+    if (opts.labels && labelSet.has(s.id)) {
+      ctx.font = '11px "Microsoft YaHei", sans-serif';
+      const txt = s.title.slice(0, 14);
+      const w = ctx.measureText(txt).width;
+      const lx = p.x + Math.max(4, base * 1.4), ly = p.y + 3;
+      const box = [lx - 2, ly - 11, w + 6, 14];
+      const hit = placed.some((b) => !(box[0] > b[0] + b[2] || box[0] + box[2] < b[0] || box[1] > b[1] + b[3] || box[1] + box[3] < b[1]));
+      if (!hit) {
+        placed.push(box);
+        ctx.globalAlpha = 0.55 + 0.35 * Math.min(1, r);
+        ctx.fillStyle = '#d6e4ff';
+        ctx.fillText(txt, lx, ly);
+      }
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+}
+
+function loop() {
+  if (opts.spin && !dragging) cam.yaw += 0.0016;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 交互 ---------- */
+let dragging = false, lastX = 0, lastY = 0, moved = 0;
+cv.addEventListener('pointerdown', (e) => { dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY; cv.classList.add('dragging'); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', (e) => {
+  if (dragging) {
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    cam.yaw += dx * 0.005; cam.pitch = Math.max(-1.35, Math.min(1.35, cam.pitch + dy * 0.004));
+    lastX = e.clientX; lastY = e.clientY;
+  } else {
+    hovered = pick(e.clientX, e.clientY);
+    const tip = el('tip');
+    if (hovered) {
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY + 10) + 'px';
+      tip.textContent = hovered.isMessage
+        ? hovered.text.slice(0, 60)
+        : `${hovered.title} · ${(KIND[hovered.kind] || {}).label || ''} · ${(hovered._r * 100).toFixed(0)}%`;
+    } else tip.style.display = 'none';
+  }
+});
+cv.addEventListener('pointerup', (e) => {
+  dragging = false; cv.classList.remove('dragging');
+  if (moved < 5) {
+    const hit = pick(e.clientX, e.clientY);
+    if (hit) select(hit); else select(null);
+  }
+});
+cv.addEventListener('dblclick', async (e) => {
+  const hit = pick(e.clientX, e.clientY);
+  if (!hit) return;
+  hit.pin = !hit.pin;
+  // 只读模式：钉住只在本次浏览有效，不会改动记忆库
+  select(hit);
+});
+cv.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  cam.dist = Math.max(40, Math.min(14000, cam.dist * (e.deltaY > 0 ? 1.16 : 0.84)));
+}, { passive: false });
+
+function pick(mx, my) {
+  let best = null, bestD = 1e9;
+  for (const s of stars) {
+    if (s._state === 'gone' || hiddenKinds.has(s.kind)) continue;
+    const p = project(s.x, s.y, s.z);
+    const d = (p.x - mx) ** 2 + (p.y - my) ** 2;
+    const rr = Math.max(9, (0.9 + s.weight * 0.55) * p.s * 3.2) ** 2;
+    if (d < rr && d < bestD) { bestD = d; best = s; }
+  }
+  if (!best) {
+    for (const msg of messages) {
+      const p = project(msg.x, msg.y, msg.z);
+      const d = (p.x - mx) ** 2 + (p.y - my) ** 2;
+      if (d < 64 && d < bestD) { bestD = d; best = msg; }
+    }
+  }
+  return best;
+}
+
+function select(s) {
+  selected = s;
+  const d = el('detail');
+  if (!s) { d.classList.remove('show'); return; }
+  d.classList.add('show');
+  if (s.isMessage) {
+    const dt = new Date(s.at);
+    el('dTitle').textContent = '对话消息';
+    el('dText').textContent = s.text;
+    el('dMeta').innerHTML = [
+      '<span>' + (s.key.startsWith('private') ? '私聊' : '群聊') + '</span>',
+      '<span>' + s.key + '</span>',
+      '<span>' + (s.self ? '我说' : '对方') + '</span>',
+      '<span>' + dt.toISOString().slice(5, 16).replace('T', ' ') + '</span>',
+      '<span>留存 ' + (Math.exp(-(s.ageDays + tDays) / s.tau) * 100).toFixed(0) + '%</span>',
+    ].join('');
+    return;
+  }
+  el('dTitle').textContent = s.title;
+  el('dText').textContent = s.text;
+  const r = retention(s, tDays);
+  el('dMeta').innerHTML = [
+    `<span>${(KIND[s.kind] || {}).label || s.kind}</span>`,
+    `<span>${s.rawKind}</span>`,
+    `<span>权重 ${s.weight}</span>`,
+    `<span>${s.ageDays < 1 ? '今天' : s.ageDays.toFixed(0) + ' 天前'}</span>`,
+    `<span>留存 ${(r * 100).toFixed(0)}%</span>`,
+    `<span>${stateLabel(stateOf(r))}</span>`,
+    s.pin ? '<span>已钉住</span>' : '',
+    ...(s.tags || []).slice(0, 4).map((t) => `<span>#${t}</span>`),
+  ].join('');
+}
+function stateLabel(st) { return { vivid: '清晰', faded: '模糊', trace: '影子', gone: '沉底' }[st] || st; }
+
+/* ---------- 面板 ---------- */
+let activeKinds = new Set();
+
+function renderKinds() {
+  const box = el('kinds');
+  const counts = {};
+  for (const s of stars) counts[s.kind] = (counts[s.kind] || 0) + 1;
+  box.innerHTML = Object.entries(KIND)
+    .filter(([k]) => counts[k])
+    .map(([k, v]) => {
+      const off = hiddenKinds.has(k) ? ' off' : '';
+      return `<div class="kindrow${off}" data-k="${k}"><i class="dot" style="background:rgb(${v.color.join(',')})"></i>${v.label}<span class="n">${counts[k]}</span></div>`;
+    }).join('');
+  box.querySelectorAll('.kindrow').forEach((row) => row.addEventListener('click', () => {
+    const k = row.dataset.k;
+    hiddenKinds.has(k) ? hiddenKinds.delete(k) : hiddenKinds.add(k);
+    renderKinds();
+  }));
+}
+
+function renderStates() {
+  const n = { vivid: 0, faded: 0, trace: 0, gone: 0 };
+  for (const s of stars) n[stateOf(retention(s, tDays))] += 1;
+  el('states').innerHTML = `<span>清晰 ${n.vivid}</span><span>模糊 ${n.faded}</span><span>影子 ${n.trace}</span><span>沉底 ${n.gone}</span>`;
+  el('tStats').textContent = tDays === 0 ? '' : `${n.vivid} 清晰 · ${n.gone} 已沉底`;
+}
+
+function renderLists() {
+  const pins = stars.filter((s) => s.pin).sort((a, b) => b.weight - a.weight).slice(0, 9);
+  el('pinned').innerHTML = pins.map((s) => `<div class="mini" data-id="${s.id}">· ${s.title}</div>`).join('');
+  const lessons = stars.filter((s) => s.rawKind === 'lesson')
+    .sort((a, b) => b.strength - a.strength).slice(0, 6);
+  el('lessons').innerHTML = lessons.map((s) => `<div class="mini" data-id="${s.id}">· ${s.title}</div>`).join('');
+  document.querySelectorAll('.mini').forEach((n) => n.addEventListener('click', () => {
+    const s = stars.find((x) => x.id === n.dataset.id);
+    if (s) select(s);
+  }));
+}
+
+/* ---------- 时间滑杆 ---------- */
+el('slider').addEventListener('input', (e) => {
+  tDays = Number(e.target.value);
+  const d = new Date(Date.now() + tDays * 86400000);
+  el('tLabel').textContent = tDays === 0 ? '今天' : `${d.toISOString().slice(0, 10)}（+${tDays} 天）`;
+  renderStates();
+});
+
+el('search').addEventListener('input', (e) => { query = e.target.value.trim(); msgMatch = query.toLowerCase(); });
+document.querySelectorAll('#tools button').forEach((b) => b.addEventListener('click', () => {
+  const t = b.dataset.t;
+  if (t === 'reset') {
+    cam = { yaw: -0.55, pitch: -1.35, dist: 1300, focal: 1400 };
+    tDays = 0; el('slider').value = 0; el('tLabel').textContent = '今天';
+    hiddenKinds.clear(); query = ''; el('search').value = '';
+    opts = { spin: true, beams: false, labels: true };
+    document.querySelectorAll('#tools button').forEach((x) => x.classList.toggle('on', x.dataset.t === 'spin' || x.dataset.t === 'labels'));
+    renderKinds(); renderStates(); select(null);
+    return;
+  }
+  if (t === 'top') { cam.pitch = -1.5607; cam.dist = 1250; cam.yaw = -0.55; return; }
+  opts[t] = !opts[t];
+  b.classList.toggle('on', opts[t]);
+}));
+
+/* ---------- 启动 ---------- */
+async function boot() {
+  resize();
+  const data = await fetch('api/data', { cache: 'no-store' }).then((r) => r.json());
+  stars = data.stars; messages = (data.messages || []).map((m) => ({ ...m, isMessage: true })); links = data.links || []; meta = data.meta;
+  el('nStars').textContent = meta.total;
+  el('avgS').textContent = meta.avgStrength;
+  el('nPin').textContent = meta.pinned;
+  el('nMsgs').textContent = meta.messages || messages.length;
+  const src = meta.sources || { memory: meta.total, diary: 0, message: meta.messages || 0 };
+  el('sources').innerHTML = '<span>副库记忆 ' + src.memory + '</span><span>日记 ' + src.diary + '</span><span>主库消息 ' + src.message + '</span>';
+  renderKinds(); renderStates(); renderLists();
+  // 支持 ?t=180 直接看未来形态（也方便截图验收）
+  const q2 = new URLSearchParams(location.search);
+  if (q2.get('view') === 'top') { cam.pitch = -1.5607; cam.dist = 1250; }
+  const qq = q2.get('q');
+  if (qq) { el('search').value = qq; el('search').dispatchEvent(new Event('input')); }
+  const dq = Number(q2.get('dist'));
+  if (Number.isFinite(dq) && dq > 0) cam.dist = dq;
+  const tq = Number(q2.get('t'));
+  if (Number.isFinite(tq) && tq > 0) {
+    el('slider').value = Math.min(365, tq);
+    el('slider').dispatchEvent(new Event('input'));
+  }
+  select(null);
+  loop();
+}
+boot();
+</script>
+</body>
+</html>

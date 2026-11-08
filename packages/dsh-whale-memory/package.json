@@ -1,0 +1,27 @@
+{
+  "name": "dsh-whale-memory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "记忆星图：把 <MEMORY_DIR> 里的记忆画成一张星图，放进左侧栏。",
+  "keywords": ["dsh", "dsh-plugin", "memory", "star-map"],
+  "license": "MIT",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./icon": "./icon.svg"
+  },
+  "files": ["index.js", "client.js", "cordis.patch.yml", "icon.svg"],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  }
+}

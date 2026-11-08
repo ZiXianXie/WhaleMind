@@ -1,0 +1,19 @@
+name: astrbot_plugin_memory_vault
+display_name: 对话流水库
+short_desc: 全量对话落盘，可镜像到本机
+desc: |
+  把所有对话原文落成 JSONL（L0 层），可选通过本机桥镜像到自己的电脑。
+  
+  它是「底账」：不进上下文、不参与推理，但可以被 recall_history 检索、被星图可视化。
+version: 1.0.0
+author: Whale Mind contributors
+repo: https://github.com/YOUR_NAME/whale-mind
+astrbot_version: ">=4.29.0"
+support_platforms:
+  - aiocqhttp
+  - qq_official
+tags:
+  - memory
+  - archive
+  - vault
+  - persistence

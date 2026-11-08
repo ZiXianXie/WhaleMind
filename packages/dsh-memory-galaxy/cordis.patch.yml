@@ -1,0 +1,8 @@
+- insert:
+    - id: memory-galaxy
+      name: dsh-memory-galaxy
+      config:
+        source: file
+        title: 记忆银河
+        dataFile: ~/whale-mind/galaxy.json
+        cacheSeconds: 20

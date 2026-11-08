@@ -1,0 +1,47 @@
+{
+  "enabled": {
+    "description": "启用上下文预算",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后完全不干预上下文长度"
+  },
+  "high_chars": {
+    "description": "高水位（字符数）",
+    "type": "int",
+    "default": 60000,
+    "hint": "上下文总字符数超过这个值才触发裁剪。32k 模型建议 24000，128k 建议 60000，1M 建议 120000",
+    "slider": { "min": 4000, "max": 400000, "step": 1000 }
+  },
+  "low_chars": {
+    "description": "低水位（字符数）",
+    "type": "int",
+    "default": 40000,
+    "hint": "触发后一次裁到这个值。建议取高水位的 2/3，差值就是缓冲：差值越大裁剪越少、缓存越稳",
+    "slider": { "min": 2000, "max": 300000, "step": 1000 }
+  },
+  "keep_last": {
+    "description": "至少保留最近多少条消息",
+    "type": "int",
+    "default": 8,
+    "hint": "防止裁剪把上下文裁空",
+    "slider": { "min": 2, "max": 50, "step": 1 }
+  },
+  "strip_images": {
+    "description": "剥掉老消息里的图片",
+    "type": "bool",
+    "default": true,
+    "hint": "图片非常占 token，老对话里的图对当前回复几乎没有价值"
+  },
+  "image_keep": {
+    "description": "最近几条消息保留图片",
+    "type": "int",
+    "default": 2,
+    "hint": "仅在「剥掉老消息里的图片」开启时生效",
+    "slider": { "min": 0, "max": 10, "step": 1 }
+  },
+  "log": {
+    "description": "每次裁剪写一行日志",
+    "type": "bool",
+    "default": true
+  }
+}

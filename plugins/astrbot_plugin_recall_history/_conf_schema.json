@@ -1,0 +1,41 @@
+{
+  "bridge_url": {
+    "description": "本机桥地址（可选）",
+    "type": "string",
+    "default": "",
+    "hint": "留空 = 归档只存本地，不往任何地方推送。填了才会把每日归档同步到自己的电脑"
+  },
+  "bridge_token": {
+    "description": "本机桥鉴权 Token",
+    "type": "string",
+    "default": "",
+    "secret": true,
+    "hint": "与 bridge_url 配套使用"
+  },
+  "history_dir": {
+    "description": "归档推送目标目录",
+    "type": "string",
+    "default": "",
+    "hint": "例如 D:\\\\日记\\\\history；留空则不推送"
+  },
+  "archive_hour": {
+    "description": "每天几点归档",
+    "type": "int",
+    "default": 4,
+    "hint": "0-23，默认凌晨 4 点",
+    "slider": { "min": 0, "max": 23, "step": 1 }
+  },
+  "archive_minute": {
+    "description": "归档分钟",
+    "type": "int",
+    "default": 10,
+    "slider": { "min": 0, "max": 59, "step": 1 }
+  },
+  "max_chars": {
+    "description": "检索结果最多返回多少字",
+    "type": "int",
+    "default": 1400,
+    "hint": "太长会挤占正常对话的上下文",
+    "slider": { "min": 300, "max": 4000, "step": 100 }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "enabled": {
+    "description": "启用情感记忆写入",
+    "type": "bool",
+    "default": false,
+    "hint": "默认关闭。这一层仍在实验阶段，建议先观察再打开"
+  },
+  "shadow": {
+    "description": "影子模式（只记不注入）",
+    "type": "bool",
+    "default": true,
+    "hint": "开启时它记录但不影响她的说话方式；关闭后记忆会被注入上下文"
+  },
+  "min_len": {
+    "description": "短于这个长度不记",
+    "type": "int",
+    "default": 8,
+    "slider": {
+      "min": 2,
+      "max": 50,
+      "step": 1
+    }
+  },
+  "skip_prefixes": {
+    "type": "list",
+    "description": "跳过的开头字符",
+    "hint": "以这些字符开头的消息不记（命令、感叹等），每行一个",
+    "default": [
+      "/",
+      "！",
+      "。"
+    ],
+    "invisible": false
+  },
+  "skip_questions": {
+    "description": "疑问句不记",
+    "type": "bool",
+    "default": true,
+    "hint": "「你还记得我们最早聊的是什么吗」这种提问不是记忆"
+  },
+  "max_len": {
+    "description": "单条最多记多少字",
+    "type": "int",
+    "default": 500,
+    "slider": {
+      "min": 50,
+      "max": 2000,
+      "step": 50
+    }
+  },
+  "stats_log": {
+    "description": "定期打印统计日志",
+    "type": "bool",
+    "default": true
+  }
+}

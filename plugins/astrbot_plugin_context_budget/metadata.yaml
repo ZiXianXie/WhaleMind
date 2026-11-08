@@ -1,0 +1,21 @@
+name: astrbot_plugin_context_budget
+display_name: 上下文预算
+short_desc: 按体积滞回裁剪历史，把 token 成本压下来
+desc: |
+  不看轮数，只看真实字符体积：平时不动上下文以保住前缀缓存，超过高水位才一次裁到低水位。
+  
+  实测：同一套历史，每轮 token 从 25.6 万降到 3.6 万，缓存命中率从 3% 提到 90%。
+  
+  注意：只改「发给模型的那一份」，数据库里的完整历史不动，recall_history 仍可检索。
+version: 1.0.0
+author: Whale Mind contributors
+repo: https://github.com/YOUR_NAME/whale-mind
+astrbot_version: ">=4.29.0"
+support_platforms:
+  - aiocqhttp
+  - qq_official
+tags:
+  - memory
+  - cost
+  - cache
+  - context

@@ -1,0 +1,21 @@
+name: astrbot_plugin_recall_history
+display_name: 历史检索
+short_desc: 每日归档 + 主动翻旧账
+desc: |
+  给机器人一个 recall_history 工具，让她能主动检索全量历史对话。
+  
+  两件事：①每天 04:10 把 live 库里的对话落到 archive/YYYY-MM-DD.jsonl（只增不删，去重）；②检索时 live 库 + 归档一起搜。
+  
+  解决的是「框架只保留最近 N 轮，更早的话彻底消失」这个通病。
+version: 1.0.0
+author: Whale Mind contributors
+repo: https://github.com/YOUR_NAME/whale-mind
+astrbot_version: ">=4.29.0"
+support_platforms:
+  - aiocqhttp
+  - qq_official
+tags:
+  - memory
+  - archive
+  - search
+  - recall

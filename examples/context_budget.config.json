@@ -1,0 +1,10 @@
+{
+  "_comment": "把本文件复制到 <AstrBot>/data/plugin_data/astrbot_plugin_context_budget/config.json 后按需修改",
+  "enabled": true,
+  "high_chars": 60000,
+  "low_chars": 40000,
+  "keep_last": 8,
+  "strip_images": true,
+  "image_keep": 2,
+  "log": true
+}

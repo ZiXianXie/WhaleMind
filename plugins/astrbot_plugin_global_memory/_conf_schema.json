@@ -1,0 +1,42 @@
+{
+  "enabled": {
+    "description": "启用跨会话记忆",
+    "type": "bool",
+    "default": true
+  },
+  "max_entries": {
+    "description": "全局时间线保留多少条",
+    "type": "int",
+    "default": 300,
+    "slider": { "min": 50, "max": 2000, "step": 50 }
+  },
+  "inject_count": {
+    "description": "每次注入几条旁线消息",
+    "type": "int",
+    "default": 10,
+    "slider": { "min": 0, "max": 40, "step": 1 }
+  },
+  "ttl_minutes": {
+    "description": "超过多久的消息不再注入（分钟）",
+    "type": "int",
+    "default": 180,
+    "slider": { "min": 10, "max": 2880, "step": 10 }
+  },
+  "max_chars": {
+    "description": "注入内容总字数上限",
+    "type": "int",
+    "default": 700,
+    "slider": { "min": 100, "max": 3000, "step": 100 }
+  },
+  "exclude_same_session": {
+    "description": "当前会话自身不重复注入",
+    "type": "bool",
+    "default": true
+  },
+  "exclude_platforms": {
+    "description": "排除的平台",
+    "type": "list",
+    "default": ["webchat"],
+    "hint": "例如 webchat，避免测试会话污染正式对话"
+  }
+}

@@ -1,0 +1,22 @@
+name: astrbot_plugin_self_study
+display_name: 自主学习
+short_desc: 从流水里提炼事实与说话风格，定时注入
+desc: |
+  四层：采集 → 消化 → 人格 → 注入。
+  
+  - 采集：把对话按天落 raw，带价值过滤（短句合并、命令行、乱码、纯符号）
+  - 消化：每天定时调用模型提炼 facts / style，每条都带 refs 指回原文
+  - 人格：可选的自我修订，单次最多 3 行，旧版带时间戳存档
+  - 注入：每轮挑 5 条事实 + 3 条风格拼到消息尾部（不碰 system prompt）
+version: 1.0.0
+author: Whale Mind contributors
+repo: https://github.com/YOUR_NAME/whale-mind
+astrbot_version: ">=4.29.0"
+support_platforms:
+  - aiocqhttp
+  - qq_official
+tags:
+  - memory
+  - digest
+  - persona
+  - llm
