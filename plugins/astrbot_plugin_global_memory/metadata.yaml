@@ -5,7 +5,7 @@ desc: |
   把各群/各私聊的最近消息汇成一条全局时间线，请求时把「别的会话」的最近若干条作为背景塞进去（当前会话自身不重复塞）。
 version: 1.0.0
 author: Whale Mind contributors
-repo: https://github.com/YOUR_NAME/whale-mind
+repo: https://github.com/ZiXianXie/WhaleMind
 astrbot_version: ">=4.29.0"
 support_platforms:
   - aiocqhttp

@@ -9,7 +9,7 @@ desc: |
   注意：只改「发给模型的那一份」，数据库里的完整历史不动，recall_history 仍可检索。
 version: 1.0.0
 author: Whale Mind contributors
-repo: https://github.com/YOUR_NAME/whale-mind
+repo: https://github.com/ZiXianXie/WhaleMind
 astrbot_version: ">=4.29.0"
 support_platforms:
   - aiocqhttp
