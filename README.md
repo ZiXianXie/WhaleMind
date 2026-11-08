@@ -63,6 +63,17 @@ L3 工作上下文 ── 最近几十条对话，按体积滞回裁剪，保住
 
 ### 1. 安装插件
 
+**方式 A：一键安装（推荐，Windows）**
+
+从 [Releases](https://github.com/ZiXianXie/WhaleMind/releases) 下载 `whale-mind-0.1.0-installer.zip`，解压后双击 `安装WhaleMind.bat`：
+
+- 自动在 C/D/E/F/G 盘、用户目录、桌面、下载目录里找 AstrBot
+- 找不到会让你把 AstrBot 文件夹拖进窗口
+- 同名插件存在时先备份成 `xxx.bak_日期时间`，不会直接覆盖
+- 不联网、不上传任何东西
+
+**方式 B：手动拷贝**
+
 把 `plugins/` 下需要的目录整个拷进 AstrBot 的插件目录：
 
 ```
