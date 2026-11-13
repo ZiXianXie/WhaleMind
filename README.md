@@ -1,5 +1,11 @@
 # Whale Mind
 
+**Four-layer memory for AstrBot (and any LLM chatbot) — archiving, distillation, affect memory, and context budgeting.**
+Cuts per-turn context from 256k to 36k tokens and lifts prompt-cache hit rate from 3% to 90%.
+
+> Keywords: AstrBot plugin · LLM chatbot memory · long-term memory · context window management ·
+> prompt caching · token cost optimization · Ollama · DeepSeek · QQ bot (OneBot / NapCat)
+
 **给聊天机器人一套真正能用、还便宜的记忆。**
 四层记忆结构 + 上下文预算，把每轮 token 从 25 万压到 3.6 万，缓存命中率 3% → 90%。
 
